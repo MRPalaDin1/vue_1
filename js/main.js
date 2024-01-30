@@ -1,11 +1,11 @@
 Vue.component('product', {
-    props: {
-        premium: {
-            type: Boolean,
-            required: true
-        }
-    },
-    template: `
+        props: {
+            premium: {
+                type: Boolean,
+                required: true
+            }
+        },
+        template: `
    <div class="product">
     <div class="product-image">
            <img :src="image" :alt="altText"/>
@@ -26,8 +26,7 @@ Vue.component('product', {
                    :style="{ backgroundColor:variant.variantColor }"
                    @mouseover="updateProduct(index)"
            ></div>
-  
-
+          
            <button
                    v-on:click="addToCart"
                    :disabled="!inStock"
@@ -35,86 +34,175 @@ Vue.component('product', {
            >
                Add to cart
            </button>
-           <button class="delete_button"
-                   v-on:click="deleteOnCart"
-                   :disabled="!inStock"
-                   :class="{ disabledButton: !inStock }"
-           >
-               Delete on cart
-           </button>
-       
+           
+           <div>
+                <h2>Reviews</h2>
+                <p v-if="!reviews.length">There are no reviews yet.</p>
+                <ul>
+                  <li v-for="review in reviews">
+                  <p>{{ review.name }}</p>
+                  <p>Rating: {{ review.rating }}</p>
+                  <p>{{ review.review }}</p>
+                  <p>{{ review.recommend }}</p>
+                  </li>
+                </ul>
+           </div>
+           <product-review @review-submitted="addReview"></product-review>
        </div>
+       
+    </div>
+
+
+       
+       
+       
+       
+       
+       
+       
    </div>
  `,
-    data() {
-        return {
-            product: "Socks",
-            brand: 'Vue Mastery',
-            selectedVariant: 0,
-            altText: "A pair of socks",
-            details: ['80% cotton', '20% polyester', 'Gender-neutral'],
-            variants: [
-                {
-                    variantId: 2234,
-                    variantColor: 'green',
-                    variantImage: "./assets/vmSocks-green-onWhite.jpg",
-                    variantQuantity: 10
-                },
-                {
-                    variantId: 2235,
-                    variantColor: 'blue',
-                    variantImage: "./assets/vmSocks-blue-onWhite.jpg",
-                    variantQuantity: 0
+        data() {
+            return {
+                product: "Socks",
+                brand: 'Vue Mastery',
+                selectedVariant: 0,
+                altText: "A pair of socks",
+                details: ['80% cotton', '20% polyester', 'Gender-neutral'],
+                variants: [
+                    {
+                        variantId: 2234,
+                        variantColor: 'green',
+                        variantImage: "./assets/vmSocks-green-onWhite.jpg",
+                        variantQuantity: 10
+                    },
+                    {
+                        variantId: 2235,
+                        variantColor: 'blue',
+                        variantImage: "./assets/vmSocks-blue-onWhite.jpg",
+                        variantQuantity: 0
+                    }
+                ],
+                reviews: []
+            }
+        },
+        methods: {
+            addToCart() {
+                this.$emit('add-to-cart', this.variants[this.selectedVariant].variantId);
+            },
+            updateProduct(index) {
+                this.selectedVariant = index;
+                console.log(index);
+            },
+            addReview(productReview) {
+                this.reviews.push(productReview)
+            }
+        },
+
+        computed: {
+            title() {
+                return this.brand + ' ' + this.product;
+            },
+            image() {
+                return this.variants[this.selectedVariant].variantImage;
+            },
+            inStock() {
+                return this.variants[this.selectedVariant].variantQuantity
+            },
+            shipping() {
+                if (this.premium) {
+                    return "Free";
+                } else {
+                    return 2.99
                 }
-            ],
-        }
-    },
-    methods: {
-        addToCart() {
-            this.$emit('add-to-cart',
-                this.variants[this.selectedVariant].variantId);
-        },
-        deleteOnCart() {
-            this.$emit('delete-on-cart',
-                this.variants[this.selectedVariant].variantId);
-        },
-        updateProduct(index) {
-            this.selectedVariant = index;
-            console.log(index);
-        }
-    },
-    computed: {
-        title() {
-            return this.brand + ' ' + this.product;
-        },
-        image() {
-            return this.variants[this.selectedVariant].variantImage;
-        },
-        inStock() {
-            return this.variants[this.selectedVariant].variantQuantity
-        },
-        shipping() {
-            if (this.premium) {
-                return "Free";
-            } else {
-                return 2.99
             }
         }
     }
+),
+Vue.component('product-review', {
+    template: `
+   <form class="review-form" @submit.prevent="onSubmit">
+ <p>
+   <label for="name">Name:</label>
+   <input required id="name" v-model="name" placeholder="name">
+ </p>
+
+ <p>
+   <label for="review">Review:</label>
+   <textarea id="review" v-model="review"></textarea>
+ </p>
+
+ <p>Would you recommend this product?</p>
+        <label>
+          Yes
+          <input type="radio" value="Yes" v-model="recommend"/>
+        </label>
+        <label>
+          No
+          <input type="radio" value="No" v-model="recommend"/>
+        </label>
+
+ <p>
+   <label for="rating">Rating:</label>
+   <select id="rating" v-model.number="rating">
+     <option>5</option>
+     <option>4</option>
+     <option>3</option>
+     <option>2</option>
+     <option>1</option>
+   </select>
+ </p>
+
+ <p>
+   <input type="submit" value="Submit"> 
+ </p>
+
+</form>
+
+
+
+ `,
+methods:{
+onSubmit() {
+    let productReview = {
+        name: this.name,
+        review: this.review,
+        rating: this.rating,
+        recommend: this.recommend
+    }
+    this.$emit('review-submitted', productReview)
+    this.name = null
+    this.review = null
+    this.rating = null
+    this.recommend = null
+},
+addReview(productReview) {
+this.reviews.push(productReview)
+    }
+
+},
+
+data() {
+    return {
+        name: null,
+        review: null,
+        rating: null,
+        recommend: null
+    }
+}
+
 })
+
 let app = new Vue({
     el: '#app',
     data: {
         premium: true,
-        cart: []
+        cart: [],
+        reviews: [],
     },
     methods: {
-        deleteOnCart(id) {
-            this.cart.pop(id);
-        },
         updateCart(id) {
             this.cart.push(id);
         }
     }
 })
-
