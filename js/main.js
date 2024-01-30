@@ -15,9 +15,10 @@ Vue.component('product', {
            <h1>{{ title }}</h1>
            <p v-if="inStock">In stock</p>
            <p v-else>Out of Stock</p>
-           
+           <ul>
+               <li v-for="detail in details">{{ detail }}</li>
+           </ul>
           <p>Shipping: {{ shipping }}</p>
-          <product-details></product-details>
            <div
                    class="color-box"
                    v-for="(variant, index) in variants"
@@ -25,11 +26,7 @@ Vue.component('product', {
                    :style="{ backgroundColor:variant.variantColor }"
                    @mouseover="updateProduct(index)"
            ></div>
-          
-
-           <div class="cart">
-               <p>Cart({{ cart }})</p>
-           </div>
+  
 
            <button
                    v-on:click="addToCart"
@@ -37,6 +34,13 @@ Vue.component('product', {
                    :class="{ disabledButton: !inStock }"
            >
                Add to cart
+           </button>
+           <button class="delete_button"
+                   v-on:click="deleteOnCart"
+                   :disabled="!inStock"
+                   :class="{ disabledButton: !inStock }"
+           >
+               Delete on cart
            </button>
        
        </div>
@@ -63,12 +67,16 @@ Vue.component('product', {
                     variantQuantity: 0
                 }
             ],
-            cart: 0
         }
     },
     methods: {
         addToCart() {
-            this.cart += 1
+            this.$emit('add-to-cart',
+                this.variants[this.selectedVariant].variantId);
+        },
+        deleteOnCart() {
+            this.$emit('delete-on-cart',
+                this.variants[this.selectedVariant].variantId);
         },
         updateProduct(index) {
             this.selectedVariant = index;
@@ -93,21 +101,20 @@ Vue.component('product', {
             }
         }
     }
-}),
-
-Vue.component('product-details', {
-    template:`<ul class="product-details">
-               <li v-for="detail in details">{{ detail }}</li>
-           </ul>`,
-    data() {
-        return {
-            details: ['80% cotton', '20% polyester', 'Gender-neutral'],
-        }
-    }
 })
 let app = new Vue({
     el: '#app',
     data: {
-        premium: true
+        premium: true,
+        cart: []
+    },
+    methods: {
+        deleteOnCart(id) {
+            this.cart.pop(id);
+        },
+        updateCart(id) {
+            this.cart.push(id);
+        }
     }
 })
+
