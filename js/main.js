@@ -6,20 +6,21 @@ let app = new Vue({
         selectedVariant: 0,
         altText: "A pair of socks",
         details: ['80% cotton', '20% polyester', 'Gender-neutral'],
+
         variants: [
             {
                 variantId: 2234,
                 variantColor: 'green',
                 variantImage: "./assets/vmSocks-green-onWhite.jpg",
                 variantQuantity: 10,
-                variantSale:true
+                onSale:true
             },
             {
                 variantId: 2235,
                 variantColor: 'blue',
                 variantImage: "./assets/vmSocks-blue-onWhite.jpg",
                 variantQuantity: 0,
-                variantSale:false
+                onSale:false
             }
          ],
          
@@ -46,7 +47,11 @@ let app = new Vue({
             return this.variants[this.selectedVariant].variantQuantity;
          },
         sale(){
-            return this.variants[this.selectedVariant].variantSale;
+            if (this.variants[this.selectedVariant].onSale === true){
+                return `${this.product} by ${this.brand} on sale!`;
+            }
+                else {return `${this.product} by ${this.brand} is not on sale`
+                }
         }  
      }
      
